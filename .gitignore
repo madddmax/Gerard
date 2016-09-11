@@ -1,2 +1,6 @@
+.vs
+packages
+/Gerard/bin
+/Gerard/obj
 /Gerard/App.config
-/.vs/Gerard/v14/*.suo
+
