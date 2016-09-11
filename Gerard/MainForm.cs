@@ -23,50 +23,101 @@ namespace Gerard
         string defaultPriorityId = "3";
         string[] defaultLabels = new string[] { };
 
-        IssueRequest issueRequest = new IssueRequest();
-        List<IssueObject> issueObjectsList = new List<IssueObject>();
+        IssueRequest issueRequest;
+        List<IssueLivingObject> issueLivingObjectsList;
+        List<IssueNonLivingObject> issueNonLivingObjectsList;
 
         public MainForm()
         {
             InitializeComponent();
+            InitializeProperties();
         }
 
-        private void btnLoad_Click(object sender, EventArgs e)
+        private void InitializeProperties()
         {
             issueRequest = new IssueRequest();
-            issueObjectsList = new List<IssueObject>();
+            issueLivingObjectsList = new List<IssueLivingObject>();
+            issueNonLivingObjectsList = new List<IssueNonLivingObject>();
 
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.InitialDirectory = Path.GetDirectoryName(Directory.GetCurrentDirectory());
-            openFileDialog.Filter = "Excel Files|*.xls;*.xlsx;*.xlsm";
-            openFileDialog.FilterIndex = 2;
-            openFileDialog.RestoreDirectory = true;
+            gridIssueRequest.DataSource = null;
+            gridIssueRequest.Update();
+            gridIssueRequest.Refresh();
 
+            gridIssueObjects.DataSource = null;
+            gridIssueObjects.Update();
+            gridIssueObjects.Refresh();
+
+            btnCreate.Enabled = false;
+            btnLoadLivingObjects.Enabled = true;
+            btnLoadNonLivingObjects.Enabled = true;
+        }
+
+        private void btnLoadLivingObjects_Click(object sender, EventArgs e)
+        {
+            InitializeProperties();
+
+            var openFileDialog = CreateOpenFileDialog();
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 FileInfo fileInfo = new FileInfo(openFileDialog.FileName);
-                string fileName = fileInfo.Name.Replace(fileInfo.Extension, "");
-                issueRequest.Summary = fileName;
-                gridIssueRequest.DataSource = new List<IssueRequest> { issueRequest };
 
                 try
                 {
-                    ExcelOptions opts = new ExcelOptions
-                    {
-                        TrimWhitespace = true,
-                        ReadFormatted = true,
-                        UnformattedFormat = CultureInfo.InvariantCulture
-                    };
-
                     using (ExcelPackage pkg = new ExcelPackage(fileInfo))
                     {
                         ExcelWorksheet sheet = pkg.Workbook.Worksheets.First();
                         ExcelAddressBase dim = sheet.Dimension;
-
                         if (dim == null)
                         {
                             return;
                         }
+
+
+                        int startFields = dim.Start.Row + 3;
+                        if (startFields > dim.End.Row)
+                        {
+                            return;
+                        }
+
+                        ExcelRange rangeFields = sheet.Cells[startFields, dim.Start.Column, dim.End.Row, dim.End.Column];
+                        ExcelReader readerFields = new ExcelReader(rangeFields, CreateExcelOptions());
+                        readerFields.Read();
+                        CheckFieldName(
+                            readerFields.CurrentRow[1].Value,
+                            "Адрес",
+                            "Нет поля 'Адрес' в столбце B"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[2].Value,
+                            "Этаж",
+                            "Нет поля 'Этаж' в столбце C"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[3].Value,
+                            "№ кв",
+                            "Нет поля '№ кв' в столбце D"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[4].Value,
+                            "Кол-во комнат",
+                            "Нет поля 'Кол-во комнат' в столбце E"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[5].Value,
+                            "Площадь",
+                            "Нет поля 'Площадь' в столбце F"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[6].Value,
+                            "Начальная стоимость",
+                            "Нет поля 'Начальная стоимость' в столбце G"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[7].Value,
+                            "Шаг аукциона",
+                            "Нет поля 'Шаг аукциона' в столбце H"
+                        );
+
 
                         int start = dim.Start.Row + 5;
                         if (start > dim.End.Row)
@@ -75,10 +126,10 @@ namespace Gerard
                         }
 
                         ExcelRange range = sheet.Cells[start, dim.Start.Column, dim.End.Row, dim.End.Column];
-                        ExcelReader reader = new ExcelReader(range, opts);
+                        ExcelReader reader = new ExcelReader(range, CreateExcelOptions());
                         while(reader.Read())
                         {
-                            IssueObject issueObject = new IssueObject
+                            IssueLivingObject issueObject = new IssueLivingObject
                             {
                                 Number = reader.CurrentRow[0].Value,
                                 Address = reader.CurrentRow[1].Value,
@@ -89,27 +140,136 @@ namespace Gerard
                                 InitialCost = reader.CurrentRow[6].Value,
                                 AuctionStep = reader.CurrentRow[7].Value,
                             };
-                            issueObjectsList.Add(issueObject);
+                            issueLivingObjectsList.Add(issueObject);
                         }
+                        gridIssueObjects.DataSource = issueLivingObjectsList;
+                        gridIssueObjects.Update();
+                        gridIssueObjects.Refresh();
                     }
+
+                    string fileName = fileInfo.Name.Replace(fileInfo.Extension, "");
+                    issueRequest.Summary = fileName;
+                    gridIssueRequest.DataSource = new List<IssueRequest> { issueRequest };
+                    gridIssueRequest.Update();
+                    gridIssueRequest.Refresh();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
+                    MessageBox.Show("Ошибка чтения файла. " + ex.Message);
                 }
 
-                gridIssueObjects.DataSource = issueObjectsList;
-                gridIssueRequest.Update();
-                gridIssueRequest.Refresh();
-                gridIssueObjects.Update();
-                gridIssueObjects.Refresh();
+                btnCreate.Enabled = true;
+            }
+        }
+
+        private void btnLoadNonLivingObjects_Click(object sender, EventArgs e)
+        {
+            InitializeProperties();
+
+            var openFileDialog = CreateOpenFileDialog();
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                FileInfo fileInfo = new FileInfo(openFileDialog.FileName);
+
+                try
+                {
+                    using (ExcelPackage pkg = new ExcelPackage(fileInfo))
+                    {
+                        ExcelWorksheet sheet = pkg.Workbook.Worksheets.First();
+                        ExcelAddressBase dim = sheet.Dimension;
+                        if (dim == null)
+                        {
+                            return;
+                        }
+
+
+                        int startFields = dim.Start.Row;
+                        if (startFields > dim.End.Row)
+                        {
+                            return;
+                        }
+
+                        ExcelRange rangeFields = sheet.Cells[startFields, dim.Start.Column, dim.End.Row, dim.End.Column];
+                        ExcelReader readerFields = new ExcelReader(rangeFields, CreateExcelOptions());
+                        readerFields.Read();
+                        CheckFieldName(
+                            readerFields.CurrentRow[1].Value,
+                            "Адрес", 
+                            "Нет поля 'Адрес' в столбце B"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[2].Value,
+                            "№ помещения",
+                            "Нет поля '№ помещения' в столбце C"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[3].Value,
+                            "Общая площадь",
+                            "Нет поля 'Общая площадь' в столбце D"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[4].Value,
+                            "Начальная стоимость",
+                            "Нет поля 'Начальная стоимость' в столбце E"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[5].Value,
+                            "Обеспечение заявки",
+                            "Нет поля 'Обеспечение заявки' в столбце F"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[10].Value,
+                            "Назначение помещений",
+                            "Нет поля 'Назначение помещений' в столбце K"
+                        );
+
+
+                        int start = dim.Start.Row + 1;
+                        if (start > dim.End.Row)
+                        {
+                            return;
+                        }
+
+                        ExcelRange range = sheet.Cells[start, dim.Start.Column, dim.End.Row, dim.End.Column];
+                        ExcelReader reader = new ExcelReader(range, CreateExcelOptions());
+                        while (reader.Read())
+                        {
+                            IssueNonLivingObject issueNonLivingObject = new IssueNonLivingObject
+                            {
+                                Number = reader.CurrentRow[0].Value,
+                                Address = reader.CurrentRow[1].Value,
+                                RoomNumber = reader.CurrentRow[2].Value,
+                                Area = reader.CurrentRow[3].Value,
+                                InitialCost = reader.CurrentRow[4].Value,
+                                EnsureBid = reader.CurrentRow[5].Value,
+                                RoomFunction = reader.CurrentRow[10].Value
+                            };
+                            issueNonLivingObjectsList.Add(issueNonLivingObject);
+                        }
+                        gridIssueObjects.DataSource = issueNonLivingObjectsList;
+                        gridIssueObjects.Update();
+                        gridIssueObjects.Refresh();
+                    }
+
+                    string fileName = fileInfo.Name.Replace(fileInfo.Extension, "");
+                    issueRequest.Summary = fileName;
+                    gridIssueRequest.DataSource = new List<IssueRequest> { issueRequest };
+                    gridIssueRequest.Update();
+                    gridIssueRequest.Refresh();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка чтения файла. " + ex.Message);
+                }
+
                 btnCreate.Enabled = true;
             }
         }
 
         private void btnCreate_Click(object sender, EventArgs e)
         {
-            btnLoad.Enabled = false;
+            btnLoadLivingObjects.Enabled = false;
+            btnLoadNonLivingObjects.Enabled = false;
 
             try
             {
@@ -125,10 +285,6 @@ namespace Gerard
                     Password = password
                 });
 
-                //string issueKey = projectKey + "-" + "8";
-                //ProjectMeta projectMetaData = client.GetProjectMeta(projectKey);
-                //Issue issueWithAllFields = client.GetIssue(issueKey);
-
                 CreateIssue createIssueRequest = new CreateIssue(
                     projectKey, 
                     issueRequest.Summary, 
@@ -141,41 +297,71 @@ namespace Gerard
                 BasicIssue resultIssueRequest = client.CreateIssue(createIssueRequest);
 
                 issueRequest.JiraLink = jiraUrl + @"browse/" + resultIssueRequest.key;
+                gridIssueRequest.Update();
+                gridIssueRequest.Refresh();
 
-                foreach(var issueObject in issueObjectsList)
+                if (issueLivingObjectsList.Count > 0)
                 {
-                    CreateIssue createIssueObject = new CreateIssue(
-                        projectKey,
-                        issueObject.Address + ", кв. " + issueObject.FlatNumber,
-                        defaultDescription, 
-                        issueObjectTypeId,
-                        defaultPriorityId,
-                        defaultLabels
-                    );
-                    createIssueObject.AddField(JiraFields.EpicLink, resultIssueRequest.key);
-                    createIssueObject.AddField(JiraFields.Address, issueObject.Address);
-                    createIssueObject.AddField(JiraFields.Floor, issueObject.Floor);
-                    createIssueObject.AddField(JiraFields.FlatNumber, issueObject.FlatNumber);
-                    createIssueObject.AddField(JiraFields.RoomsCount, issueObject.RoomsCount);
-                    createIssueObject.AddField(JiraFields.Area, issueObject.Area);
-                    createIssueObject.AddField(JiraFields.InitialCost, issueObject.InitialCost);
-                    createIssueObject.AddField(JiraFields.AuctionStep, issueObject.AuctionStep);
-                    BasicIssue resultIssueObject = client.CreateIssue(createIssueObject);
+                    foreach (var issueObject in issueLivingObjectsList)
+                    {
+                        CreateIssue createIssueObject = new CreateIssue(
+                            projectKey,
+                            issueObject.Address + ", кв. " + issueObject.FlatNumber,
+                            defaultDescription,
+                            issueObjectTypeId,
+                            defaultPriorityId,
+                            defaultLabels
+                        );
+                        createIssueObject.AddField(JiraFields.EpicLink, resultIssueRequest.key);
+                        createIssueObject.AddField(JiraFields.Address, issueObject.Address);
+                        createIssueObject.AddField(JiraFields.Floor, issueObject.Floor);
+                        createIssueObject.AddField(JiraFields.FlatNumber, issueObject.FlatNumber);
+                        createIssueObject.AddField(JiraFields.RoomsCount, issueObject.RoomsCount);
+                        createIssueObject.AddField(JiraFields.Area, issueObject.Area);
+                        createIssueObject.AddField(JiraFields.InitialCost, issueObject.InitialCost);
+                        createIssueObject.AddField(JiraFields.AuctionStep, issueObject.AuctionStep);
+                        BasicIssue resultIssueObject = client.CreateIssue(createIssueObject);
 
-                    issueObject.JiraLink = jiraUrl + @"browse/" + resultIssueObject.key;
+                        issueObject.JiraLink = jiraUrl + @"browse/" + resultIssueObject.key;
+                    }
                 }
+
+                if(issueNonLivingObjectsList.Count > 0)
+                {
+                    foreach (var issueObject in issueNonLivingObjectsList)
+                    {
+                        CreateIssue createIssueObject = new CreateIssue(
+                            projectKey,
+                            issueObject.Address + ", № помещения " + issueObject.RoomNumber,
+                            defaultDescription,
+                            issueObjectTypeId,
+                            defaultPriorityId,
+                            defaultLabels
+                        );
+                        createIssueObject.AddField(JiraFields.EpicLink, resultIssueRequest.key);
+                        createIssueObject.AddField(JiraFields.Address, issueObject.Address);
+                        createIssueObject.AddField(JiraFields.RoomNumber, issueObject.RoomNumber);
+                        createIssueObject.AddField(JiraFields.Area, issueObject.Area);
+                        createIssueObject.AddField(JiraFields.InitialCost, issueObject.InitialCost);
+                        createIssueObject.AddField(JiraFields.EnsureBid, issueObject.EnsureBid);
+                        createIssueObject.AddField(JiraFields.RoomFunction, issueObject.RoomFunction);
+                        BasicIssue resultIssueObject = client.CreateIssue(createIssueObject);
+
+                        issueObject.JiraLink = jiraUrl + @"browse/" + resultIssueObject.key;
+                    }
+                }
+
+                gridIssueObjects.Update();
+                gridIssueObjects.Refresh();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: Could not create jira tasks. Original error: " + ex.Message);
+                MessageBox.Show("Ошибка создания задач в JIRA. " + ex.Message);
             }
 
-            gridIssueRequest.Update();
-            gridIssueRequest.Refresh();
-            gridIssueObjects.Update();
-            gridIssueObjects.Refresh();
             btnCreate.Enabled = false;
-            btnLoad.Enabled = true;
+            btnLoadLivingObjects.Enabled = true;
+            btnLoadNonLivingObjects.Enabled = true;
         }
 
         private void gridIssueRequest_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -186,6 +372,36 @@ namespace Gerard
             }
 
             Process.Start(issueRequest.JiraLink);
+        }
+
+        private OpenFileDialog CreateOpenFileDialog()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            string currentDir = Directory.GetCurrentDirectory();
+            openFileDialog.InitialDirectory = Path.GetDirectoryName(currentDir);
+            openFileDialog.Filter = "Excel Files|*.xls;*.xlsx;*.xlsm";
+            openFileDialog.FilterIndex = 2;
+            openFileDialog.RestoreDirectory = true;
+
+            return openFileDialog;
+        }
+
+        private ExcelOptions CreateExcelOptions()
+        {
+            return new ExcelOptions
+            {
+                TrimWhitespace = true,
+                ReadFormatted = true,
+                UnformattedFormat = CultureInfo.InvariantCulture
+            };
+        }
+
+        private void CheckFieldName(string value, string name, string message)
+        {
+            if (value == null || !value.Contains(name))
+            {
+                throw new Exception(message);
+            }
         }
     }
 }

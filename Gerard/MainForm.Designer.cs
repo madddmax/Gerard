@@ -31,9 +31,10 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.gridIssueObjects = new System.Windows.Forms.DataGridView();
             this.btnCreate = new System.Windows.Forms.Button();
-            this.btnLoad = new System.Windows.Forms.Button();
+            this.btnLoadLivingObjects = new System.Windows.Forms.Button();
             this.gridIssueRequest = new System.Windows.Forms.DataGridView();
             this.JiraLink = new System.Windows.Forms.DataGridViewLinkColumn();
+            this.btnLoadNonLivingObjects = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gridIssueObjects)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridIssueRequest)).BeginInit();
             this.SuspendLayout();
@@ -57,25 +58,24 @@
             // btnCreate
             // 
             this.btnCreate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCreate.Enabled = false;
-            this.btnCreate.Location = new System.Drawing.Point(490, 386);
+            this.btnCreate.Location = new System.Drawing.Point(464, 372);
             this.btnCreate.Name = "btnCreate";
-            this.btnCreate.Size = new System.Drawing.Size(120, 35);
+            this.btnCreate.Size = new System.Drawing.Size(146, 50);
             this.btnCreate.TabIndex = 1;
-            this.btnCreate.Text = "Create tasks";
+            this.btnCreate.Text = "Создать задачи";
             this.btnCreate.UseVisualStyleBackColor = true;
             this.btnCreate.Click += new System.EventHandler(this.btnCreate_Click);
             // 
-            // btnLoad
+            // btnLoadLivingObjects
             // 
-            this.btnLoad.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnLoad.Location = new System.Drawing.Point(332, 386);
-            this.btnLoad.Name = "btnLoad";
-            this.btnLoad.Size = new System.Drawing.Size(120, 35);
-            this.btnLoad.TabIndex = 2;
-            this.btnLoad.Text = "Load from file";
-            this.btnLoad.UseVisualStyleBackColor = true;
-            this.btnLoad.Click += new System.EventHandler(this.btnLoad_Click);
+            this.btnLoadLivingObjects.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnLoadLivingObjects.Location = new System.Drawing.Point(12, 372);
+            this.btnLoadLivingObjects.Name = "btnLoadLivingObjects";
+            this.btnLoadLivingObjects.Size = new System.Drawing.Size(220, 50);
+            this.btnLoadLivingObjects.TabIndex = 2;
+            this.btnLoadLivingObjects.Text = "Загрузить заявку с жилыми помещениями";
+            this.btnLoadLivingObjects.UseVisualStyleBackColor = true;
+            this.btnLoadLivingObjects.Click += new System.EventHandler(this.btnLoadLivingObjects_Click);
             // 
             // gridIssueRequest
             // 
@@ -103,13 +103,25 @@
             this.JiraLink.Name = "JiraLink";
             this.JiraLink.ReadOnly = true;
             // 
+            // btnLoadNonLivingObjects
+            // 
+            this.btnLoadNonLivingObjects.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnLoadNonLivingObjects.Location = new System.Drawing.Point(238, 372);
+            this.btnLoadNonLivingObjects.Name = "btnLoadNonLivingObjects";
+            this.btnLoadNonLivingObjects.Size = new System.Drawing.Size(220, 50);
+            this.btnLoadNonLivingObjects.TabIndex = 4;
+            this.btnLoadNonLivingObjects.Text = "Загрузить заявку с нежилыми помещениями";
+            this.btnLoadNonLivingObjects.UseVisualStyleBackColor = true;
+            this.btnLoadNonLivingObjects.Click += new System.EventHandler(this.btnLoadNonLivingObjects_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(622, 433);
+            this.Controls.Add(this.btnLoadNonLivingObjects);
             this.Controls.Add(this.gridIssueRequest);
-            this.Controls.Add(this.btnLoad);
+            this.Controls.Add(this.btnLoadLivingObjects);
             this.Controls.Add(this.btnCreate);
             this.Controls.Add(this.gridIssueObjects);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -126,9 +138,10 @@
 
         private System.Windows.Forms.DataGridView gridIssueObjects;
         private System.Windows.Forms.Button btnCreate;
-        private System.Windows.Forms.Button btnLoad;
+        private System.Windows.Forms.Button btnLoadLivingObjects;
         private System.Windows.Forms.DataGridView gridIssueRequest;
         private System.Windows.Forms.DataGridViewLinkColumn JiraLink;
+        private System.Windows.Forms.Button btnLoadNonLivingObjects;
     }
 }
 
