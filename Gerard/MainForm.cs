@@ -83,6 +83,11 @@ namespace Gerard
                         ExcelReader readerFields = new ExcelReader(rangeFields, CreateExcelOptions());
                         readerFields.Read();
                         CheckFieldName(
+                            readerFields.CurrentRow[0].Value,
+                            "№",
+                            "Нет поля '№' в столбце A"
+                        );
+                        CheckFieldName(
                             readerFields.CurrentRow[1].Value,
                             "Адрес",
                             "Нет поля 'Адрес' в столбце B"
@@ -114,8 +119,13 @@ namespace Gerard
                         );
                         CheckFieldName(
                             readerFields.CurrentRow[7].Value,
+                            "Обеспечение заявки",
+                            "Нет поля 'Обеспечение заявки' в столбце H"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[8].Value,
                             "Шаг аукциона",
-                            "Нет поля 'Шаг аукциона' в столбце H"
+                            "Нет поля 'Шаг аукциона' в столбце I"
                         );
 
 
@@ -138,7 +148,8 @@ namespace Gerard
                                 RoomsCount = reader.CurrentRow[4].Value,
                                 Area = reader.CurrentRow[5].Value,
                                 InitialCost = reader.CurrentRow[6].Value,
-                                AuctionStep = reader.CurrentRow[7].Value,
+                                EnsureBid = reader.CurrentRow[7].Value,
+                                AuctionStep = reader.CurrentRow[8].Value,
                             };
                             issueLivingObjectsList.Add(issueObject);
                         }
@@ -155,7 +166,7 @@ namespace Gerard
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Ошибка чтения файла. " + ex.Message);
+                    MessageBox.Show("Ошибка чтения файла. " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
                 btnCreate.Enabled = true;
@@ -193,6 +204,11 @@ namespace Gerard
                         ExcelReader readerFields = new ExcelReader(rangeFields, CreateExcelOptions());
                         readerFields.Read();
                         CheckFieldName(
+                            readerFields.CurrentRow[0].Value,
+                            "№",
+                            "Нет поля '№' в столбце A"
+                        );
+                        CheckFieldName(
                             readerFields.CurrentRow[1].Value,
                             "Адрес", 
                             "Нет поля 'Адрес' в столбце B"
@@ -218,9 +234,14 @@ namespace Gerard
                             "Нет поля 'Обеспечение заявки' в столбце F"
                         );
                         CheckFieldName(
-                            readerFields.CurrentRow[10].Value,
+                            readerFields.CurrentRow[6].Value,
+                            "Шаг аукциона",
+                            "Нет поля 'Шаг аукциона' в столбце G"
+                        );
+                        CheckFieldName(
+                            readerFields.CurrentRow[11].Value,
                             "Назначение помещений",
-                            "Нет поля 'Назначение помещений' в столбце K"
+                            "Нет поля 'Назначение помещений' в столбце L"
                         );
 
 
@@ -242,7 +263,8 @@ namespace Gerard
                                 Area = reader.CurrentRow[3].Value,
                                 InitialCost = reader.CurrentRow[4].Value,
                                 EnsureBid = reader.CurrentRow[5].Value,
-                                RoomFunction = reader.CurrentRow[10].Value
+                                AuctionStep = reader.CurrentRow[6].Value,
+                                RoomFunction = reader.CurrentRow[11].Value
                             };
                             issueNonLivingObjectsList.Add(issueNonLivingObject);
                         }
@@ -259,7 +281,7 @@ namespace Gerard
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Ошибка чтения файла. " + ex.Message);
+                    MessageBox.Show("Ошибка чтения файла. " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
                 btnCreate.Enabled = true;
@@ -313,12 +335,14 @@ namespace Gerard
                             defaultLabels
                         );
                         createIssueObject.AddField(JiraFields.EpicLink, resultIssueRequest.key);
+                        createIssueObject.AddField(JiraFields.Number, issueObject.Number);
                         createIssueObject.AddField(JiraFields.Address, issueObject.Address);
                         createIssueObject.AddField(JiraFields.Floor, issueObject.Floor);
                         createIssueObject.AddField(JiraFields.FlatNumber, issueObject.FlatNumber);
                         createIssueObject.AddField(JiraFields.RoomsCount, issueObject.RoomsCount);
                         createIssueObject.AddField(JiraFields.Area, issueObject.Area);
                         createIssueObject.AddField(JiraFields.InitialCost, issueObject.InitialCost);
+                        createIssueObject.AddField(JiraFields.EnsureBid, issueObject.EnsureBid);
                         createIssueObject.AddField(JiraFields.AuctionStep, issueObject.AuctionStep);
                         BasicIssue resultIssueObject = client.CreateIssue(createIssueObject);
 
@@ -339,11 +363,13 @@ namespace Gerard
                             defaultLabels
                         );
                         createIssueObject.AddField(JiraFields.EpicLink, resultIssueRequest.key);
+                        createIssueObject.AddField(JiraFields.Number, issueObject.Number);
                         createIssueObject.AddField(JiraFields.Address, issueObject.Address);
                         createIssueObject.AddField(JiraFields.RoomNumber, issueObject.RoomNumber);
                         createIssueObject.AddField(JiraFields.Area, issueObject.Area);
                         createIssueObject.AddField(JiraFields.InitialCost, issueObject.InitialCost);
                         createIssueObject.AddField(JiraFields.EnsureBid, issueObject.EnsureBid);
+                        createIssueObject.AddField(JiraFields.AuctionStep, issueObject.AuctionStep);
                         createIssueObject.AddField(JiraFields.RoomFunction, issueObject.RoomFunction);
                         BasicIssue resultIssueObject = client.CreateIssue(createIssueObject);
 
@@ -356,7 +382,7 @@ namespace Gerard
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка создания задач в JIRA. " + ex.Message);
+                MessageBox.Show("Ошибка создания задач в JIRA. " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             btnCreate.Enabled = false;

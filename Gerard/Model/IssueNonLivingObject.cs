@@ -4,6 +4,9 @@
     {
         public string JiraLink { get; set; }
 
+        /// <summary>
+        /// №
+        /// </summary>
         public string Number { get; set; }
 
         /// <summary>
@@ -30,6 +33,11 @@
         /// Обеспечение заявки
         /// </summary>
         public string EnsureBid { get; set; }
+
+        /// <summary>
+        /// Шаг аукциона
+        /// </summary>
+        public string AuctionStep { get; set; }
 
         /// <summary>
         /// Назначение помещения

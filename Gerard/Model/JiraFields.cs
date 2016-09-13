@@ -55,5 +55,10 @@
         /// Назначение помещения
         /// </summary>
         public const string RoomFunction = "customfield_10138";
+
+        /// <summary>
+        /// №
+        /// </summary>
+        public const string Number = "customfield_10141";
     }
 }

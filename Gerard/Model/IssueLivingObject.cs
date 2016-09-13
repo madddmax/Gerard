@@ -4,6 +4,9 @@
     {
         public string JiraLink { get; set; }
 
+        /// <summary>
+        /// №
+        /// </summary>
         public string Number { get; set; }
 
         /// <summary>
@@ -35,6 +38,11 @@
         /// Начальная стоимость
         /// </summary>
         public string InitialCost { get; set; }
+
+        /// <summary>
+        /// Обеспечение заявки
+        /// </summary>
+        public string EnsureBid { get; set; }
 
         /// <summary>
         /// Шаг аукциона
